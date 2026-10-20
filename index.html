@@ -277,8 +277,8 @@
         </div>
     </div>
 
-    <form id="registrationForm" onsubmit="event.preventDefault(); alert('感謝您的報名！(此為網頁版型預覽)');">
-        
+<form id="registrationForm">    
+    
         <!-- 填表人基本資料 -->
         <div class="info-section">
             <h2>第一步：填表人基本資料</h2>
@@ -458,13 +458,54 @@
         const total = baseCost + addonCost;
         document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
     }
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
+
+document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const btn = document.querySelector('.btn-submit');
+    const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
+
+    const data = {
+        name: document.getElementById('userName').value,
+        phone: document.getElementById('userPhone').value,
+        lineId: document.getElementById('lineId').value,
+        lineName: document.getElementById('lineName').value,
+        plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
+        adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
+        children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
+        roomType: mainPlan === 'overnight' ? document.getElementById('roomType').selectedOptions[0].text : '',
+        roommates: mainPlan === 'overnight' ? document.getElementById('roommates').value : '',
+        total: document.getElementById('totalCostText').innerText
+    };
+
+    // 住宿方案必須填室友
+    if (mainPlan === 'overnight' && !data.roommates.trim()) {
+        alert('請填寫室友姓名');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = '送出中...';
+
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data)
+        });
+        alert('感謝您的報名！我們已收到您的資料。');
+        this.reset();
+        togglePlan('single_day');
+    } catch (err) {
+        alert('送出失敗，請稍後再試或聯絡主辦人。');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '送出報名表單';
+    }
+});
 </script>
 
 </body>
 </html>
-
-<form id="registrationForm" action="https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec" method="POST">
-
-<script>
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
-</script>

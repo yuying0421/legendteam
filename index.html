@@ -329,8 +329,8 @@
 
             <!-- 方案一：單日細節選單 -->
             <div id="singleDayPanel" class="sub-panel">
+                <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert" id="badge_single">限量 10 人</span></p>
                 <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">單日報名明細：</p>
-                <span class="badge badge-alert" id="badge_single">限量 10 人</span>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label style="font-size: 13px;">攜伴大人人數 (每位 $1000)</label>
                     <select id="adultCount" onchange="calculateTotal()">
@@ -358,14 +358,9 @@
                 
                 <div class="form-group">
                     <label style="font-size: 13px;">選擇房型<span>*</span></label>
-                    <select id="roomType" onchange="updateRoomFields()">
-                        <option value="room2">雙人房 - 2位 ($4,200) [剩餘 3 間]</option>
-                        <option value="room4">四人房 - 4位 ($7,310) [剩餘 4 間]</option>
-                        <option value="room6">六人房 - 6位 ($10,410) [剩餘 3 間]</option>
-                        <span class="badge" id="badge_room2">限 3 間</span>
-<span class="badge" id="badge_room4">限 4 間</span>
-<span class="badge" id="badge_room6">限 3 間</span>
-                    </select>
+                    • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
+• 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
+• 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 3 間</span>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
@@ -463,50 +458,7 @@
     }
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
 
-document.getElementById('registrationForm');
 
-    const btn = document.querySelector('.btn-submit');
-    const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
-
-    const data = {
-        name: document.getElementById('userName').value,
-        phone: document.getElementById('userPhone').value,
-        lineId: document.getElementById('lineId').value,
-        lineName: document.getElementById('lineName').value,
-        plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
-        adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
-        children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
-        roomType: mainPlan === 'overnight' ? document.getElementById('roomType').selectedOptions[0].text : '',
-        roommates: mainPlan === 'overnight' ? document.getElementById('roommates').value : '',
-        total: document.getElementById('totalCostText').innerText
-    };
-
-    // 住宿方案必須填室友
-    if (mainPlan === 'overnight' && !data.roommates.trim()) {
-        alert('請填寫室友姓名');
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = '送出中...';
-
-    try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(data)
-        });
-        alert('感謝您的報名！我們已收到您的資料。');
-        this.reset();
-        togglePlan('single_day');
-    } catch (err) {
-        alert('送出失敗，請稍後再試或聯絡主辦人。');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = '送出報名表單';
-    }
-});
     let remaining = null;
 
 async function loadRemaining() {

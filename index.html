@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電商夥伴兩天一夜團隊聚會報名表</title>
+    <style>
+        :root {
+            --bg-color: #F9F6F0; /* 質感奶白 */
+            --card-bg: #FFFFFF;
+            --primary-color: #8C7A6B; /* 暖咖啡/大地色調 */
+            --primary-light: #F0EAE1;
+            --text-color: #4A423A;
+            --text-light: #8A7E72;
+            --border-color: #E6DFD5;
+            --accent-color: #D9A05B; /* 溫暖點綴色 */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 15px;
+        }
+
+        .info-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(140, 122, 107, 0.05);
+        }
+
+        .info-section h2 {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--primary-light);
+            padding-bottom: 8px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-item {
+            font-size: 14px;
+        }
+
+        .info-item strong {
+            color: var(--primary-color);
+        }
+
+        .badge {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 6px;
+        }
+
+        .badge-alert {
+            background-color: #F5E6E6;
+            color: #C05C5C;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        label span {
+            color: #C05C5C;
+            margin-left: 4px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #FAF9F6;
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="tel"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(140, 122, 107, 0.1);
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            background: #FAF9F6;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-label:hover {
+            border-color: var(--primary-color);
+            background: #FFFFFF;
+        }
+
+        input[type="radio"], input[type="checkbox"] {
+            margin-right: 12px;
+            accent-color: var(--primary-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .radio-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .radio-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .radio-desc {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .sub-panel {
+            background-color: var(--primary-light);
+            background-color: rgba(240, 234, 225, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .summary-box {
+            background-color: var(--primary-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px dashed var(--primary-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        button.btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 24px;
+            transition: background-color 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        button.btn-submit:hover {
+            background-color: #766558;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Team Building Party</h1>
+        <p>電商團隊夥伴兩天一夜盛夏聚會</p>
+    </header>
+
+    <!-- 活動與費用說明 -->
+    <div class="info-section">
+        <h2>活動與方案說明</h2>
+        <div class="info-grid">
+            <div class="info-item"><strong>活動性質：</strong>兩天一夜、趣味遊戲</div>
+            <div class="info-item"><strong>活動對象：</strong>電商夥伴與眷屬</div>
+        </div>
+        <div style="font-size: 13px; color: var(--text-color); line-height: 1.8;">
+            <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert">限量 10 人</span></p>
+            <p style="padding-left: 12px; margin-bottom: 10px; color: var(--text-light);">
+                • 夥伴本人：$1,000 / 人<br>
+                • 攜伴大人：$1,000 / 人<br>
+                • 攜伴孩童 (6歲以下)：$400 / 人
+            </p>
+            <p style="margin-bottom: 6px;"><strong>【方案二：兩天一夜深度留宿組】</strong></p>
+            <p style="padding-left: 12px; color: var(--text-light);">
+                • 需自行找好室友，由填表人擔任「房長」統一登記並一併付款：<br>
+                • 雙人房：$4,200 / 間 (限2位) <span class="badge">限 3 間</span><br>
+                • 四人房：$7,310 / 間 (限4位) <span class="badge">限 4 間</span><br>
+                • 六人房：$10,410 / 間 (限6位) <span class="badge">限 3 間</span>
+            </p>
+        </div>
+    </div>
+
+    <form id="registrationForm" onsubmit="event.preventDefault(); alert('感謝您的報名！(此為網頁版型預覽)');">
+        
+        <!-- 填表人基本資料 -->
+        <div class="info-section">
+            <h2>第一步：填表人基本資料</h2>
+            
+            <div class="form-group">
+                <label for="userName">填表人姓名<span>*</span></label>
+                <input type="text" id="userName" required placeholder="請輸入您的真實姓名">
+            </div>
+
+            <div class="form-group">
+                <label for="userPhone">手機號碼<span>*</span></label>
+                <input type="tel" id="userPhone" required placeholder="請輸入手機號碼 (如: 0912345678)">
+            </div>
+
+            <div class="info-grid" style="margin-bottom: 0;">
+                <div class="form-group">
+                    <label for="lineId">Line ID<span>*</span></label>
+                    <input type="text" id="lineId" required placeholder="請輸入 Line ID">
+                </div>
+                <div class="form-group">
+                    <label for="lineName">Line 名稱<span>*</span></label>
+                    <input type="text" id="lineName" required placeholder="請輸入 Line 顯示名稱">
+                </div>
+            </div>
+        </div>
+
+        <!-- 選擇活動方案 -->
+        <div class="info-section">
+            <h2>第二步：選擇報名方案</h2>
+            
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="mainPlan" value="single_day" checked onclick="togglePlan('single_day')">
+                    <div class="radio-text">
+                        <span class="radio-title">方案一：不留宿單日活動</span>
+                        <span class="radio-desc">含一日行程、遊戲活動與餐點（可攜帶親友孩童）</span>
+                    </div>
+                </label>
+                
+                <label class="radio-label">
+                    <input type="radio" name="mainPlan" value="overnight" onclick="togglePlan('overnight')">
+                    <div class="radio-text">
+                        <span class="radio-title">方案二：兩天一夜住宿活動 (您為房長)</span>
+                        <span class="radio-desc">含兩日行程、住宿及統一繳款（需找好指定室友）</span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 方案一：單日細節選單 -->
+            <div id="singleDayPanel" class="sub-panel">
+                <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">單日報名明細：</p>
+                
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label style="font-size: 13px;">攜伴大人人數 (每位 $1000)</label>
+                    <select id="adultCount" onchange="calculateTotal()">
+                        <option value="0">無攜伴大人</option>
+                        <option value="1">1 位 (+ $1,000)</option>
+                        <option value="2">2 位 (+ $2,000)</option>
+                        <option value="3">3 位 (+ $3,000)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 13px;">攜伴 6 歲以下孩童人數 (每位 $400)</label>
+                    <select id="childCount" onchange="calculateTotal()">
+                        <option value="0">無攜伴孩童</option>
+                        <option value="1">1 位 (+ $400)</option>
+                        <option value="2">2 位 (+ $800)</option>
+                        <option value="3">3 位 (+ $1,200)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 方案二：住宿細節選單 -->
+            <div id="overnightPanel" class="sub-panel hidden">
+                <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">住宿房型與室友登記：</p>
+                
+                <div class="form-group">
+                    <label style="font-size: 13px;">選擇房型<span>*</span></label>
+                    <select id="roomType" onchange="updateRoomFields()">
+                        <option value="room2">雙人房 - 2位 ($4,200) [剩餘 3 間]</option>
+                        <option value="room4">四人房 - 4位 ($7,310) [剩餘 4 間]</option>
+                        <option value="room6">六人房 - 6位 ($10,410) [剩餘 3 間]</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label id="roommateLabel" style="font-size: 13px;">室友姓名署名 (房長為您本人，請填寫其餘同行室友)<span>*</span></label>
+                    <input type="text" id="roommates" placeholder="例：王小明（請依房型人數扣除自己後填寫）">
+                </div>
+            </div>
+        </div>
+
+        <!-- 應繳金額統計 -->
+        <div class="summary-box">
+            <div class="summary-row">
+                <span>方案基礎費用</span>
+                <span id="baseCostText">$1,000</span>
+            </div>
+            <div id="add-on-row" class="summary-row">
+                <span>加購 / 攜伴費用</span>
+                <span id="addonCostText">$0</span>
+            </div>
+            <div class="summary-total">
+                <span>總計應繳金額</span>
+                <span id="totalCostText">$1,000</span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">送出報名表單</button>
+    </form>
+</div>
+
+<script>
+    function togglePlan(plan) {
+        const singleDayPanel = document.getElementById('singleDayPanel');
+        const overnightPanel = document.getElementById('overnightPanel');
+        
+        if (plan === 'single_day') {
+            singleDayPanel.classList.remove('hidden');
+            overnightPanel.classList.add('hidden');
+        } else {
+            singleDayPanel.classList.add('hidden');
+            overnightPanel.classList.remove('hidden');
+            updateRoomFields();
+        }
+        calculateTotal();
+    }
+
+    function updateRoomFields() {
+        const roomType = document.getElementById('roomType').value;
+        const roommateLabel = document.getElementById('roommateLabel');
+        const roommatesInput = document.getElementById('roommates');
+        
+        if (roomType === 'room2') {
+            roommateLabel.innerHTML = '其餘 1 位室友姓名署名<span>*</span>';
+            roommatesInput.placeholder = '例：王小明';
+        } else if (roomType === 'room4') {
+            roommateLabel.innerHTML = '其餘 3 位室友姓名署名<span>*</span>';
+            roommatesInput.placeholder = '例：王小明、李小華、張小強';
+        } else if (roomType === 'room6') {
+            roommateLabel.innerHTML = '其餘 5 位室友姓名署名<span>*</span>';
+            roommatesInput.placeholder = '例：陳大文、林小美、王五...';
+        }
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
+        let baseCost = 0;
+        let addonCost = 0;
+        
+        if (mainPlan === 'single_day') {
+            baseCost = 1000; // 本人
+            const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
+            const childCount = parseInt(document.getElementById('childCount').value) || 0;
+            addonCost = (adultCount * 1000) + (childCount * 400);
+            
+            document.getElementById('baseCostText').innerText = '$1,000 (夥伴本人)';
+            document.getElementById('addonCostText').innerText = '$' + addonCost.toLocaleString();
+        } else {
+            const roomType = document.getElementById('roomType').value;
+            if (roomType === 'room2') {
+                baseCost = 4200;
+                document.getElementById('baseCostText').innerText = '$4,200 (雙人房總額)';
+            } else if (roomType === 'room4') {
+                baseCost = 7310;
+                document.getElementById('baseCostText').innerText = '$7,310 (四人房總額)';
+            } else if (roomType === 'room6') {
+                baseCost = 10410;
+                document.getElementById('baseCostText').innerText = '$10,410 (六人房總額)';
+            }
+            addonCost = 0;
+            document.getElementById('addonCostText').innerText = '$0';
+        }
+        
+        const total = baseCost + addonCost;
+        document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
+    }
+</script>
+
+</body>
+</html>
+
+<form id="registrationForm" action="https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec" method="POST">
+
+<script>
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
+</script>

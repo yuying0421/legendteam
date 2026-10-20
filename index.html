@@ -261,7 +261,7 @@
             <div class="info-item"><strong>活動對象：</strong>電商夥伴與眷屬</div>
         </div>
         <div style="font-size: 13px; color: var(--text-color); line-height: 1.8;">
-            <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert">限量 10 人</span></p>
+            <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert" id="badge_single">限量 10 人</span></p>
             <p style="padding-left: 12px; margin-bottom: 10px; color: var(--text-light);">
                 • 夥伴本人：$1,000 / 人<br>
                 • 攜伴大人：$1,000 / 人<br>
@@ -270,9 +270,9 @@
             <p style="margin-bottom: 6px;"><strong>【方案二：兩天一夜深度留宿組】</strong></p>
             <p style="padding-left: 12px; color: var(--text-light);">
                 • 需自行找好室友，由填表人擔任「房長」統一登記並一併付款：<br>
-                • 雙人房：$4,200 / 間 (限2位) <span class="badge">限 3 間</span><br>
-                • 四人房：$7,310 / 間 (限4位) <span class="badge">限 4 間</span><br>
-                • 六人房：$10,410 / 間 (限6位) <span class="badge">限 3 間</span>
+• 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
+• 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
+• 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 3 間</span>
             </p>
         </div>
     </div>
@@ -329,7 +329,6 @@
 
             <!-- 方案一：單日細節選單 -->
             <div id="singleDayPanel" class="sub-panel">
-                <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert" id="badge_single">限量 10 人</span></p>
                 <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">單日報名明細：</p>
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label style="font-size: 13px;">攜伴大人人數 (每位 $1000)</label>
@@ -357,11 +356,13 @@
                 <p style="font-size: 14px; font-weight: bold; margin-bottom: 12px; color: var(--primary-color);">住宿房型與室友登記：</p>
                 
                 <div class="form-group">
-                    <label style="font-size: 13px;">選擇房型<span>*</span></label>
-                    • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
-• 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
-• 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 3 間</span>
-                </div>
+    <label style="font-size: 13px;">選擇房型<span>*</span></label>
+    <select id="roomType" onchange="updateRoomFields()">
+        <option value="room2">雙人房 - 2位 ($4,200) [剩餘 3 間]</option>
+        <option value="room4">四人房 - 4位 ($7,310) [剩餘 4 間]</option>
+        <option value="room6">六人房 - 6位 ($10,410) [剩餘 3 間]</option>
+    </select>
+</div>
 
                 <div class="form-group" style="margin-bottom: 0;">
                     <label id="roommateLabel" style="font-size: 13px;">室友姓名署名 (房長為您本人，請填寫其餘同行室友)<span>*</span></label>

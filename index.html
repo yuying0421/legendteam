@@ -305,7 +305,7 @@
 • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
 • 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
 • 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 4 間</span><br>
-• 折扣：0-2 歲嬰兒（佔床）餐費每人折 $600；3-6 歲孩童場餐費每人折 $350；工作人員住宿場餐費每人補助 $300
+• 折扣：未滿3歲嬰兒（佔床）餐費每人折 $600；3-6 歲孩童場餐費每人折 $350
 • 補助：籌備工作人員住宿費每人補助 $300 / 住宿才有喔!
 
             </p>
@@ -456,10 +456,10 @@
 };
 const CHILD_DISCOUNT = 350;  // 3-6歲孩童
 const STAFF_DISCOUNT = 300;  // 工作人員
-    const INFANT_DISCOUNT = 600; // 0-2歲嬰兒（佔床）
+    const INFANT_DISCOUNT = 600; // 未滿3歲嬰兒（佔床）
 const FAM_LABEL = {
-    infant: '家屬-0-2歲嬰兒',
-    child36: '家屬-3-6歲孩童',
+    infant: '家屬-未滿3歲嬰兒',
+    child36: '家屬-3歲以上未滿6歲孩童',
     child6up: '家屬-6歲以上孩童',
     adult: '家屬-大人'
 };
@@ -493,7 +493,7 @@ function buildMemberList() {
             <label>家屬類別<span>*</span></label>
             <select class="m-fam" onchange="calculateTotal()">
                 <option value="">請選擇</option>
-                <option value="infant">0-2 歲嬰兒（佔床，折 $600）</option>
+<option value="infant">未滿 3 歲嬰兒（佔床，折 $600）</option>
                 <option value="child36">3-6 歲孩童（折 $350）</option>
                 <option value="child6up">6 歲以上孩童</option>
                 <option value="adult">大人</option>

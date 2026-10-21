@@ -239,7 +239,37 @@
         button.btn-submit:hover {
             background-color: #766558;
         }
-
+.member-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+}
+.member-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+.member-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.member-card label { font-size: 12px; margin-bottom: 4px; }
+.m-family { margin-top: 10px; }
+.staff-check {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.staff-check.hidden { display: none; }
+@media (max-width: 480px) {
+    .member-row { grid-template-columns: 1fr; }
+}
         .hidden {
             display: none;
         }
@@ -272,7 +302,8 @@
                 • 需自行找好室友，由填表人擔任「房長」統一登記並一併付款：<br>
 • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
 • 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
-• 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 3 間</span>
+• 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 3 間</span><br>
+• 折扣：3-6 歲孩童場餐費每人折 $350；工作人員場餐費每人折 $300
             </p>
         </div>
     </div>
@@ -365,9 +396,9 @@
 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label id="roommateLabel" style="font-size: 13px;">室友姓名署名 (房長為您本人，請填寫其餘同行室友)<span>*</span></label>
-                    <input type="text" id="roommates" placeholder="例：王小明（請依房型人數扣除自己後填寫）">
-                </div>
+    <label style="font-size: 13px;">入住人員名單（含房長）<span>*</span></label>
+    <div id="memberList"></div>
+</div>
             </div>
         </div>
 
@@ -381,6 +412,10 @@
                 <span>加購 / 攜伴費用</span>
                 <span id="addonCostText">$0</span>
             </div>
+            <div id="discount-row" class="summary-row hidden">
+    <span>折扣</span>
+    <span id="discountText" style="color:#C05C5C;">-$0</span>
+</div>
             <div class="summary-total">
                 <span>總計應繳金額</span>
                 <span id="totalCostText">$1,000</span>
@@ -407,56 +442,153 @@
         calculateTotal();
     }
 
-    function updateRoomFields() {
-        const roomType = document.getElementById('roomType').value;
-        const roommateLabel = document.getElementById('roommateLabel');
-        const roommatesInput = document.getElementById('roommates');
-        
-        if (roomType === 'room2') {
-            roommateLabel.innerHTML = '其餘 1 位室友姓名署名<span>*</span>';
-            roommatesInput.placeholder = '例：王小明';
-        } else if (roomType === 'room4') {
-            roommateLabel.innerHTML = '其餘 3 位室友姓名署名<span>*</span>';
-            roommatesInput.placeholder = '例：王小明、李小華、張小強';
-        } else if (roomType === 'room6') {
-            roommateLabel.innerHTML = '其餘 5 位室友姓名署名<span>*</span>';
-            roommatesInput.placeholder = '例：陳大文、林小美、王五...';
-        }
-        calculateTotal();
+   
+    const ROOM_INFO = {
+    room2: { price: 4200,  size: 2, name: '雙人房' },
+    room4: { price: 7310,  size: 4, name: '四人房' },
+    room6: { price: 10410, size: 6, name: '六人房' }
+};
+const CHILD_DISCOUNT = 350;  // 3-6歲孩童
+const STAFF_DISCOUNT = 300;  // 工作人員
+const FAM_LABEL = { child36: '家屬-3-6歲孩童', child6up: '家屬-6歲以上孩童', adult: '家屬-大人' };
+
+// 建立入住人員欄位（房長 + 最多 5 位同行人員，依房型顯示/隱藏）
+function buildMemberList() {
+    let html = `
+    <div class="member-card">
+        <div class="member-title">房長（填表人本人）<span class="badge">夥伴</span></div>
+        <label class="staff-check">
+            <input type="checkbox" id="leaderStaff" onchange="calculateTotal()"> 我是工作人員（折 $300）
+        </label>
+    </div>`;
+    for (let i = 1; i <= 5; i++) {
+        html += `
+    <div class="member-card" data-guest="${i}">
+        <div class="member-title">同行人員 ${i}</div>
+        <div class="member-row">
+            <div>
+                <label>姓名<span>*</span></label>
+                <input type="text" class="m-name" placeholder="請輸入姓名">
+            </div>
+            <div>
+                <label>身分<span>*</span></label>
+                <select class="m-type" onchange="onTypeChange(this)">
+                    <option value="partner">夥伴</option>
+                    <option value="family">家屬</option>
+                </select>
+            </div>
+        </div>
+        <div class="m-family hidden">
+            <label>家屬類別<span>*</span></label>
+            <select class="m-fam" onchange="calculateTotal()">
+                <option value="">請選擇</option>
+                <option value="child36">3-6 歲孩童（折 $350）</option>
+                <option value="child6up">6 歲以上孩童</option>
+                <option value="adult">大人</option>
+            </select>
+        </div>
+        <label class="staff-check m-staff-wrap">
+            <input type="checkbox" class="m-staff" onchange="calculateTotal()"> 工作人員（折 $300）
+        </label>
+    </div>`;
+    }
+    document.getElementById('memberList').innerHTML = html;
+}
+
+function getGuestCards() {
+    return Array.from(document.querySelectorAll('#memberList .member-card[data-guest]'));
+}
+
+function syncCard(card) {
+    const type = card.querySelector('.m-type').value;
+    const famBox = card.querySelector('.m-family');
+    const staffWrap = card.querySelector('.m-staff-wrap');
+    if (type === 'family') {
+        famBox.classList.remove('hidden');
+        staffWrap.classList.add('hidden');
+        card.querySelector('.m-staff').checked = false;
+    } else {
+        famBox.classList.add('hidden');
+        card.querySelector('.m-fam').value = '';
+        staffWrap.classList.remove('hidden');
+    }
+}
+
+function onTypeChange(sel) {
+    syncCard(sel.closest('.member-card'));
+    calculateTotal();
+}
+
+function updateRoomFields() {
+    const size = ROOM_INFO[document.getElementById('roomType').value].size;
+    getGuestCards().forEach((card, i) => {
+        card.classList.toggle('hidden', i >= size - 1);
+        syncCard(card);
+    });
+    calculateTotal();
+}
+
+// 取得目前房型的所有入住者（含房長）
+function getMembers() {
+    const size = ROOM_INFO[document.getElementById('roomType').value].size;
+    const members = [{
+        name: document.getElementById('userName').value.trim(),
+        type: 'partner', fam: '',
+        staff: document.getElementById('leaderStaff').checked,
+        isLeader: true
+    }];
+    getGuestCards().slice(0, size - 1).forEach(card => {
+        members.push({
+            name: card.querySelector('.m-name').value.trim(),
+            type: card.querySelector('.m-type').value,
+            fam: card.querySelector('.m-fam').value,
+            staff: card.querySelector('.m-staff').checked,
+            isLeader: false
+        });
+    });
+    return members;
+}
+
+function describeMember(m) {
+    if (m.type === 'family') return FAM_LABEL[m.fam] || '家屬';
+    return '夥伴' + (m.staff ? '・工作人員' : '');
+}
+
+function calcDiscount(members) {
+    return members.reduce((sum, m) => {
+        if (m.type === 'family' && m.fam === 'child36') return sum + CHILD_DISCOUNT;
+        if (m.type === 'partner' && m.staff) return sum + STAFF_DISCOUNT;
+        return sum;
+    }, 0);
+}
+
+function calculateTotal() {
+    const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
+    let baseCost = 0, addonCost = 0, discount = 0;
+    const discountRow = document.getElementById('discount-row');
+
+    if (mainPlan === 'single_day') {
+        baseCost = 1000;
+        const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
+        const childCount = parseInt(document.getElementById('childCount').value) || 0;
+        addonCost = (adultCount * 1000) + (childCount * 400);
+        document.getElementById('baseCostText').innerText = '$1,000 (夥伴本人)';
+        document.getElementById('addonCostText').innerText = '$' + addonCost.toLocaleString();
+        discountRow.classList.add('hidden');
+    } else {
+        const room = ROOM_INFO[document.getElementById('roomType').value];
+        baseCost = room.price;
+        discount = calcDiscount(getMembers());
+        document.getElementById('baseCostText').innerText =
+            '$' + room.price.toLocaleString() + ' (' + room.name + '總額)';
+        document.getElementById('addonCostText').innerText = '$0';
+        document.getElementById('discountText').innerText = '-$' + discount.toLocaleString();
+        discountRow.classList.toggle('hidden', discount === 0);
     }
 
-    function calculateTotal() {
-        const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
-        let baseCost = 0;
-        let addonCost = 0;
-        
-        if (mainPlan === 'single_day') {
-            baseCost = 1000; // 本人
-            const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
-            const childCount = parseInt(document.getElementById('childCount').value) || 0;
-            addonCost = (adultCount * 1000) + (childCount * 400);
-            
-            document.getElementById('baseCostText').innerText = '$1,000 (夥伴本人)';
-            document.getElementById('addonCostText').innerText = '$' + addonCost.toLocaleString();
-        } else {
-            const roomType = document.getElementById('roomType').value;
-            if (roomType === 'room2') {
-                baseCost = 4200;
-                document.getElementById('baseCostText').innerText = '$4,200 (雙人房總額)';
-            } else if (roomType === 'room4') {
-                baseCost = 7310;
-                document.getElementById('baseCostText').innerText = '$7,310 (四人房總額)';
-            } else if (roomType === 'room6') {
-                baseCost = 10410;
-                document.getElementById('baseCostText').innerText = '$10,410 (六人房總額)';
-            }
-            addonCost = 0;
-            document.getElementById('addonCostText').innerText = '$0';
-        }
-        
-        const total = baseCost + addonCost;
-        document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
-    }
+    const total = Math.max(0, baseCost + addonCost - discount);
+    document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
+}
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
 
 
@@ -520,23 +652,36 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
     const btn = document.querySelector('.btn-submit');
     const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
 
-    const data = {
-        name: document.getElementById('userName').value,
-        phone: document.getElementById('userPhone').value,
-        lineId: document.getElementById('lineId').value,
-        lineName: document.getElementById('lineName').value,
-        plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
-        adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
-        children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
-        roomType: mainPlan === 'overnight' ? document.getElementById('roomType').value : '',
-        roommates: mainPlan === 'overnight' ? document.getElementById('roommates').value : '',
-        total: document.getElementById('totalCostText').innerText
-    };
-
-    if (mainPlan === 'overnight' && !data.roommates.trim()) {
-        alert('請填寫室友姓名');
-        return;
+   let members = [];
+let discount = 0;
+if (mainPlan === 'overnight') {
+    members = getMembers();
+    for (let i = 1; i < members.length; i++) {
+        if (!members[i].name) { alert('請填寫同行人員 ' + i + ' 的姓名'); return; }
+        if (members[i].type === 'family' && !members[i].fam) {
+            alert('請選擇同行人員 ' + i + ' 的家屬類別'); return;
+        }
     }
+    discount = calcDiscount(members);
+}
+
+const guests = members.filter(m => !m.isLeader);
+
+const data = {
+    name: document.getElementById('userName').value,
+    phone: document.getElementById('userPhone').value,
+    lineId: document.getElementById('lineId').value,
+    lineName: document.getElementById('lineName').value,
+    plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
+    adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
+    children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
+    roomType: mainPlan === 'overnight' ? document.getElementById('roomType').value : '',
+    // 沿用原欄位：同行人員姓名（含身分），例：王小明（夥伴・工作人員）、李小華（家屬-3-6歲孩童）
+    roommates: guests.map(m => m.name + '（' + describeMember(m) + '）').join('、'),
+    leaderStaff: mainPlan === 'overnight' ? (members[0].staff ? '是' : '否') : '',
+    discount: discount,
+    total: document.getElementById('totalCostText').innerText
+};
 
     btn.disabled = true;
     btn.innerText = '送出中...';
@@ -553,9 +698,10 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
 
         if (result.result === 'success') {
             alert('感謝您的報名！我們已收到您的資料。');
-            this.reset();
-            togglePlan('single_day');
-            applyRemaining();
+           this.reset();
+updateRoomFields();
+togglePlan('single_day');
+applyRemaining();
         } else if (result.result === 'full') {
             alert(result.message + '，請調整後重新送出。');
         } else {
@@ -569,6 +715,7 @@ document.getElementById('registrationForm').addEventListener('submit', async fun
     }
 });
 
+    buildMemberList();
 loadRemaining();
 </script>
 

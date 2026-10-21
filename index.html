@@ -305,7 +305,9 @@
 • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
 • 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
 • 六人房：$10,410 / 間 (限6位) <span class="badge" id="badge_room6">限 4 間</span><br>
-• 折扣：3-6 歲孩童場餐費每人折 $350；工作人員住宿場餐費每人補助 $300
+• 折扣：0-2 歲嬰兒（佔床）餐費每人折 $600；3-6 歲孩童場餐費每人折 $350；工作人員住宿場餐費每人補助 $300
+• 補助：籌備工作人員住宿費每人補助 $300 / 住宿才有喔!
+
             </p>
         </div>
     </div>
@@ -371,6 +373,7 @@
                         <option value="2">2 位 (+ $2,000)</option>
                         <option value="3">3 位 (+ $3,000)</option>
                     </select>
+                    <div id="adultNames"></div> 
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
@@ -381,6 +384,7 @@
                         <option value="2">2 位 (+ $800)</option>
                         <option value="3">3 位 (+ $1,200)</option>
                     </select>
+<div id="childNames"></div> 
                 </div>
             </div>
 
@@ -452,8 +456,13 @@
 };
 const CHILD_DISCOUNT = 350;  // 3-6歲孩童
 const STAFF_DISCOUNT = 300;  // 工作人員
-const FAM_LABEL = { child36: '家屬-3-6歲孩童', child6up: '家屬-6歲以上孩童', adult: '家屬-大人' };
-
+    const INFANT_DISCOUNT = 600; // 0-2歲嬰兒（佔床）
+const FAM_LABEL = {
+    infant: '家屬-0-2歲嬰兒',
+    child36: '家屬-3-6歲孩童',
+    child6up: '家屬-6歲以上孩童',
+    adult: '家屬-大人'
+};
 // 建立入住人員欄位（房長 + 最多 5 位同行人員，依房型顯示/隱藏）
 function buildMemberList() {
     let html = `
@@ -484,6 +493,7 @@ function buildMemberList() {
             <label>家屬類別<span>*</span></label>
             <select class="m-fam" onchange="calculateTotal()">
                 <option value="">請選擇</option>
+                <option value="infant">0-2 歲嬰兒（佔床，折 $600）</option>
                 <option value="child36">3-6 歲孩童（折 $350）</option>
                 <option value="child6up">6 歲以上孩童</option>
                 <option value="adult">大人</option>
@@ -558,8 +568,9 @@ function describeMember(m) {
 
 function calcDiscount(members) {
     return members.reduce((sum, m) => {
+        if (m.type === 'family' && m.fam === 'infant')  return sum + INFANT_DISCOUNT;
         if (m.type === 'family' && m.fam === 'child36') return sum + CHILD_DISCOUNT;
-        if (m.type === 'partner' && m.staff) return sum + STAFF_DISCOUNT;
+        if (m.type === 'partner' && m.staff)            return sum + STAFF_DISCOUNT;
         return sum;
     }, 0);
 }
@@ -591,6 +602,30 @@ function calculateTotal() {
     const total = Math.max(0, baseCost + addonCost - discount);
     document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
 }
+    // 依人數產生攜伴姓名欄位（已填的名字不會因為調整人數而消失）
+function renderNameInputs(boxId, selectId, label) {
+    const box = document.getElementById(boxId);
+    const n = parseInt(document.getElementById(selectId).value) || 0;
+    const old = Array.from(box.querySelectorAll('input')).map(i => i.value);
+    box.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.placeholder = label + ' ' + (i + 1) + ' 姓名（必填）';
+        inp.value = old[i] || '';
+        inp.style.marginTop = '8px';
+        box.appendChild(inp);
+    }
+}
+
+function renderCompanionNames() {
+    renderNameInputs('adultNames', 'adultCount', '攜伴大人');
+    renderNameInputs('childNames', 'childCount', '攜伴孩童');
+}
+
+document.getElementById('adultCount').addEventListener('change', renderCompanionNames);
+document.getElementById('childCount').addEventListener('change', renderCompanionNames);
+    
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZgO4uzFA6RWTNOgxVSNZPljkHV1TefWypu18XIFeQ6pFY-yBf3uSVmOGVntUSvefQ/exec";
 
 
@@ -666,7 +701,19 @@ if (mainPlan === 'overnight') {
     }
     discount = calcDiscount(members);
 }
-
+let companions = '';
+if (mainPlan === 'single_day') {
+    const aNames = Array.from(document.querySelectorAll('#adultNames input')).map(i => i.value.trim());
+    const cNames = Array.from(document.querySelectorAll('#childNames input')).map(i => i.value.trim());
+    if ([...aNames, ...cNames].some(n => !n)) {
+        alert('請填寫所有攜伴人員的姓名');
+        return;
+    }
+    companions = [
+        ...aNames.map(n => n + '（大人）'),
+        ...cNames.map(n => n + '（孩童）')
+    ].join('、');
+}
 const guests = members.filter(m => !m.isLeader);
 
 const data = {
@@ -682,6 +729,7 @@ const data = {
     roommates: guests.map(m => m.name + '（' + describeMember(m) + '）').join('、'),
     leaderStaff: mainPlan === 'overnight' ? (members[0].staff ? '是' : '否') : '',
     discount: discount,
+        companions: companions,
     total: document.getElementById('totalCostText').innerText
 };
 
@@ -701,6 +749,7 @@ const data = {
         if (result.result === 'success') {
             alert('感謝您的報名！我們已收到您的資料。');
            this.reset();
+            renderCompanionNames(); 
 updateRoomFields();
 togglePlan('single_day');
 applyRemaining();

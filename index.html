@@ -290,6 +290,44 @@
     .member-row { grid-template-columns: 1fr; }
 }
 
+
+        .event-intro {
+            background: linear-gradient(135deg, #FBF7F0 0%, #F3EBDD 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 18px 16px;
+            margin-bottom: 16px;
+        }
+        .event-intro .intro-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--primary-color);
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .event-intro .intro-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 6px;
+        }
+        .event-intro .intro-text {
+            font-size: 13px;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+        .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .chip {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            border-radius: 999px;
+            padding: 3px 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .audience { font-size: 14px; margin-bottom: 18px; }
+        .audience strong { color: var(--primary-color); }
         .bank-box {
             background: #FAF9F6;
             border: 1px solid var(--border-color);
@@ -353,10 +391,18 @@
     <!-- 活動與費用說明 -->
     <div class="info-section">
         <h2>活動與方案說明</h2>
-        <div class="info-grid">
-            <div class="info-item"><strong>活動性質：</strong>兩天一夜、趣味遊戲</div>
-            <div class="info-item"><strong>活動對象：</strong>電商夥伴與眷屬</div>
+        <div class="event-intro">
+            <div class="intro-label">🎄 活動性質</div>
+            <div class="intro-title">跟著落跑薑餅人，一起闖關尋寶、童心大解放！</div>
+            <div class="intro-text">兩天一夜，沒有壓力的趣味遊戲與歡笑時光，大人小孩都能盡情玩。放下工作、帶著家人，一起把笑聲和回憶打包帶回家。</div>
+            <div class="chip-row">
+                <span class="chip">兩天一夜</span>
+                <span class="chip">闖關尋寶</span>
+                <span class="chip">親子同樂</span>
+                <span class="chip">夥伴凝聚</span>
+            </div>
         </div>
+        <div class="audience"><strong>活動對象：</strong>電商夥伴與眷屬，歡迎攜家帶眷一起來</div>
         <div style="font-size: 13px; color: var(--text-color); line-height: 1.8;">
             <p style="margin-bottom: 6px;"><strong>【方案一：不留宿單日玩樂組】</strong><span class="badge badge-alert" id="badge_single">限量 10 人</span></p>
             <p style="padding-left: 12px; margin-bottom: 10px; color: var(--text-light);">

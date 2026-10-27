@@ -35,6 +35,24 @@
             margin: 0 auto;
         }
 
+        /* 橫幅圖 */
+        .banner {
+            margin-bottom: 28px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(140, 122, 107, 0.12);
+            background: var(--primary-light);
+        }
+
+        .banner img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            object-position: center 40%;
+        }
+
         header {
             text-align: center;
             margin-bottom: 40px;
@@ -46,6 +64,7 @@
             margin-bottom: 12px;
             font-weight: 600;
             letter-spacing: 1px;
+            white-space: nowrap; /* 標題固定一行 */
         }
 
         header p {
@@ -273,11 +292,28 @@
         .hidden {
             display: none;
         }
+
+        /* 手機版：標題依螢幕寬度自動縮放，確保維持一行 */
+        @media (max-width: 600px) {
+            body { padding: 20px 16px; }
+            .banner { margin-bottom: 20px; border-radius: 12px; }
+            header { margin-bottom: 28px; }
+            header h1 {
+                font-size: clamp(16px, 5vw, 28px);
+                letter-spacing: 0;
+            }
+            .info-section { padding: 22px 18px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- 橫幅圖 -->
+    <div class="banner">
+        <img src="about2.jpg" alt="活動場地外觀">
+    </div>
+
     <header>
         <h1>童心不打烊-尋找落跑薑餅人🎄</h1>
         <p>傳奇團隊兩天一夜聖會</p>

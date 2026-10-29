@@ -371,6 +371,25 @@
             }
             .info-section { padding: 22px 18px; }
         }
+        .refund-notice {
+    background: #FFF7E8;
+    border: 1px solid #EBD3A8;
+    border-left: 4px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+.refund-notice strong { color: #B5762A; }
+.agree-check {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 16px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.agree-check input { margin-top: 3px; }
     </style>
 </head>
 <body>
@@ -542,6 +561,10 @@
         <!-- 匯款資訊 -->
         <div class="info-section" style="margin-top: 24px;">
             <h2>匯款資訊</h2>
+            <div class="refund-notice">
+    <strong>⚠️ 重要提醒</strong><br>
+    匯款完成後<strong>恕不退費</strong>。若臨時無法參加，歡迎自行<strong>尋找替補人員</strong>，並請<strong>私訊魚夫的 Line</strong> 告知更換名單。
+</div>
             <div class="bank-box">
                 <div><strong>銀行：</strong>（823）將來銀行 營業部分行</div>
                 <div><strong>帳號：</strong><span class="bank-account" id="bankAccount">88640000011661</span><button type="button" class="btn-copy" onclick="copyAccount(this)">複製</button></div>
@@ -560,7 +583,9 @@
             </div>
             <p class="hint">請於匯款後填寫您匯出帳戶的後五碼與實際匯款金額，方便我們核對款項。</p>
         </div>
-
+<label class="agree-check">
+    <input type="checkbox" id="agreeRefund" required>
+<span>我已了解匯款後不退費，但可以找人替補（需私訊魚夫的 Line 通知）。</span></label>
         <button type="submit" class="btn-submit">送出報名表單</button>
     </form>
 </div>

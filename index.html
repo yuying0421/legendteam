@@ -921,4 +921,147 @@ function applyRemaining() {
         if (firstOpen) roomSelect.value = firstOpen.value;
     }
     const allRoomsFull = Array.from(roomSelect.options).every(o => o.disabled);
-    document.querySelector('input[value="o
+    document.querySelector('input[value="overnight"]').disabled = allRoomsFull;
+
+    // 單日：名額、停用超過剩餘人數的選項
+    document.getElementById('badge_single').innerText =
+        remaining.single > 0 ? '剩 ' + remaining.single + ' 人' : '已額滿';
+    document.querySelector('input[value="single_day"]').disabled = remaining.single < 1;
+    limitSingleOptions();
+}
+
+function limitSingleOptions() {
+    if (!remaining) return;
+    const adultSel = document.getElementById('adultCount');
+    const childSel = document.getElementById('childCount');
+    Array.from(adultSel.options).forEach(o => {
+        o.disabled = 1 + Number(o.value) + Number(childSel.value) > remaining.single;
+    });
+    Array.from(childSel.options).forEach(o => {
+        o.disabled = 1 + Number(adultSel.value) + Number(o.value) > remaining.single;
+    });
+}
+
+document.getElementById('adultCount').addEventListener('change', limitSingleOptions);
+document.getElementById('childCount').addEventListener('change', limitSingleOptions);
+
+function copyAccount(btn) {
+    const text = document.getElementById('bankAccount').innerText.trim();
+    const done = () => { btn.innerText = '已複製'; setTimeout(() => btn.innerText = '複製', 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {});
+    } else {
+        const t = document.createElement('textarea');
+        t.value = text; document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); done(); } catch (e) {}
+        document.body.removeChild(t);
+    }
+}
+
+document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const remitLast5 = document.getElementById('remitLast5').value.trim();
+    const remitAmountRaw = document.getElementById('remitAmount').value.replace(/[^0-9]/g, '');
+    if (!/^[0-9]{5}$/.test(remitLast5)) { alert('匯款帳號後五碼請輸入 5 位數字'); return; }
+    if (!remitAmountRaw) { alert('請輸入匯款金額'); return; }
+    const totalNum = parseInt(document.getElementById('totalCostText').innerText.replace(/[^0-9]/g, '')) || 0;
+    if (parseInt(remitAmountRaw) !== totalNum) {
+        if (!confirm('您填寫的匯款金額 $' + parseInt(remitAmountRaw).toLocaleString() + ' 與應繳金額 $' + totalNum.toLocaleString() + ' 不同，確定要送出嗎？')) return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
+
+   let members = [];
+let discount = 0;
+if (mainPlan === 'overnight') {
+    members = getMembers();
+    for (let i = 1; i < members.length; i++) {
+        if (!members[i].name) { alert('請填寫同行人員 ' + i + ' 的姓名'); return; }
+        if (members[i].type === 'family' && !members[i].fam) {
+            alert('請選擇同行人員 ' + i + ' 的家屬類別'); return;
+        }
+    }
+    discount = calcDiscount(members);
+}
+let companions = '';
+if (mainPlan === 'single_day') {
+    const aRows = Array.from(document.querySelectorAll('#adultNames .comp-row'));
+    const cRows = Array.from(document.querySelectorAll('#childNames .comp-row'));
+    const aNames = aRows.map(r => r.querySelector('input').value.trim());
+    const cNames = cRows.map(r => r.querySelector('input').value.trim());
+    if ([...aNames, ...cNames].some(n => !n)) {
+        alert('請填寫所有攜伴人員的姓名');
+        return;
+    }
+    companions = [
+        ...aRows.map((r, i) => aNames[i] + '（大人・' + INS_LABEL[r.querySelector('select').value] + '）'),
+        ...cNames.map(n => n + '（孩童・未滿15歲）')
+    ].join('、');
+}
+const guests = members.filter(m => !m.isLeader);
+const insKeys = mainPlan === 'single_day' ? getSingleInsKeys() : members.map(m => m.ins);
+const insTotal = calcInsurance(insKeys).total;
+
+const data = {
+    name: document.getElementById('userName').value,
+    phone: document.getElementById('userPhone').value,
+    lineId: document.getElementById('lineId').value,
+    lineName: document.getElementById('lineName').value,
+    plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
+    adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
+    children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
+    roomType: mainPlan === 'overnight' ? document.getElementById('roomType').value : '',
+    // 沿用原欄位：同行人員姓名（含身分與保險年齡），例：王小明（夥伴・工作人員・15-64歲）
+    roommates: guests.map(m => m.name + '（' + describeMember(m) + '）').join('、'),
+    leaderStaff: mainPlan === 'overnight' ? (members[0].staff ? '是' : '否') : '',
+    leaderAge: INS_LABEL[document.getElementById('leaderIns').value],
+    discount: discount,
+    insurance: insTotal,
+    companions: companions,
+    total: document.getElementById('totalCostText').innerText,
+    remitLast5: remitLast5,
+    remitAmount: parseInt(remitAmountRaw)
+};
+
+    btn.disabled = true;
+    btn.innerText = '送出中...';
+
+    try {
+        // 不加 headers，避免瀏覽器的預檢請求被 Apps Script 擋掉
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.remaining) { remaining = result.remaining; applyRemaining(); }
+
+        if (result.result === 'success') {
+            alert('感謝您的報名！我們已收到您的資料。');
+           this.reset();
+            renderCompanionNames(); 
+updateRoomFields();
+togglePlan('single_day');
+applyRemaining();
+        } else if (result.result === 'full') {
+            alert(result.message + '，請調整後重新送出。');
+        } else {
+            alert('送出失敗，請稍後再試或聯絡主辦人。');
+        }
+    } catch (err) {
+        alert('送出失敗，請稍後再試或聯絡主辦人。');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = '送出報名表單';
+    }
+});
+
+    buildMemberList();
+calculateTotal();
+loadRemaining();
+</script>
+
+</body>
+</html>

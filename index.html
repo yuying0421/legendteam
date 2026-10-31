@@ -159,6 +159,11 @@
             box-shadow: 0 0 0 3px rgba(140, 122, 107, 0.1);
         }
 
+        select:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
         .radio-group, .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -229,6 +234,13 @@
             margin-bottom: 8px;
         }
 
+        .summary-detail {
+            display: block;
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
         .summary-total {
             display: flex;
             justify-content: space-between;
@@ -278,6 +290,8 @@
 }
 .member-card label { font-size: 12px; margin-bottom: 4px; }
 .m-family { margin-top: 10px; }
+.m-ins-wrap { margin-top: 10px; }
+.comp-row select { margin-top: 6px; }
 .staff-check {
     display: flex;
     align-items: center;
@@ -430,7 +444,7 @@
                 • 攜伴孩童 (6歲以下)：$400 / 人
             </p>
             <p style="margin-bottom: 6px;"><strong>【方案二：兩天一夜深度留宿組】</strong></p>
-            <p style="padding-left: 12px; color: var(--text-light);">
+            <p style="padding-left: 12px; margin-bottom: 10px; color: var(--text-light);">
                 • 需自行找好室友，由填表人擔任「房長」統一登記並一併付款：<br>
 • 雙人房：$4,200 / 間 (限2位) <span class="badge" id="badge_room2">限 3 間</span><br>
 • 四人房：$7,310 / 間 (限4位) <span class="badge" id="badge_room4">限 4 間</span><br>
@@ -438,6 +452,13 @@
 • 折扣：未滿3歲嬰兒（佔床）餐費每人折 $600；3-6 歲孩童場餐費每人折 $350<br>
 • 補助：籌備工作人員住宿費每人補助 $300 / 住宿才有喔!<br>
 
+            </p>
+            <p style="margin-bottom: 6px;"><strong>【必繳：旅遊保險費】</strong></p>
+            <p style="padding-left: 12px; color: var(--text-light);">
+                • 每位參加者皆須投保，費用另計並併入總金額<br>
+                • 未滿 15 足歲：$50 / 人<br>
+                • 15 足歲以上至未滿 65 足歲：$100 / 人<br>
+                • 65 足歲以上：請私訊魚夫的 Line 洽詢
             </p>
         </div>
     </div>
@@ -458,15 +479,24 @@
                 <input type="tel" id="userPhone" required placeholder="請輸入手機號碼 (如: 0912345678)">
             </div>
 
-            <div class="info-grid" style="margin-bottom: 0;">
-                <div class="form-group">
+            <div class="info-grid">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label for="lineId">Line ID<span>*</span></label>
                     <input type="text" id="lineId" required placeholder="請輸入 Line ID">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label for="lineName">Line 名稱<span>*</span></label>
                     <input type="text" id="lineName" required placeholder="請輸入 Line 顯示名稱">
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label for="leaderIns">填表人年齡（保險用）<span>*</span></label>
+                <select id="leaderIns" onchange="calculateTotal()">
+                    <option value="adult">15 足歲以上至未滿 65 足歲（保險 $100）</option>
+                    <option value="u15">未滿 15 足歲（保險 $50）</option>
+                    <option value="sr">65 足歲以上（請私訊魚夫的 Line）</option>
+                </select>
             </div>
         </div>
 
@@ -552,9 +582,13 @@
     <span>折扣</span>
     <span id="discountText" style="color:#C05C5C;">-$0</span>
 </div>
+            <div class="summary-row">
+                <span>保險費（必繳）<small class="summary-detail" id="insuranceDetail"></small></span>
+                <span id="insuranceText">$100</span>
+            </div>
             <div class="summary-total">
                 <span>總計應繳金額</span>
-                <span id="totalCostText">$1,000</span>
+                <span id="totalCostText">$1,100</span>
             </div>
         </div>
 
@@ -615,6 +649,13 @@
 const CHILD_DISCOUNT = 350;  // 3-6歲孩童
 const STAFF_DISCOUNT = 300;  // 工作人員
     const INFANT_DISCOUNT = 600; // 未滿3歲嬰兒（佔床）
+// 保險費：u15 = 未滿15足歲、adult = 15足歲以上至未滿65足歲
+const INS_PRICE = { u15: 50, adult: 100, sr: 0 }; // sr = 65歲以上，不在表單計費，請私訊魚夫的 Line
+const INS_LABEL = { u15: '未滿15歲', adult: '15-64歲', sr: '65歲以上' };
+const INS_OPTIONS =
+    '<option value="adult">15 足歲以上至未滿 65 足歲（$100）</option>' +
+    '<option value="u15">未滿 15 足歲（$50）</option>' +
+    '<option value="sr">65 足歲以上（請私訊魚夫的 Line）</option>';
 const FAM_LABEL = {
     infant: '家屬-未滿3歲嬰兒',
     child36: '家屬-3歲以上未滿6歲孩童',
@@ -649,13 +690,17 @@ function buildMemberList() {
         </div>
         <div class="m-family hidden">
             <label>家屬類別<span>*</span></label>
-            <select class="m-fam" onchange="calculateTotal()">
+            <select class="m-fam" onchange="onFamChange(this)">
                 <option value="">請選擇</option>
 <option value="infant">未滿 3 歲嬰兒（佔床，折 $600）</option>
                 <option value="child36">3-6 歲孩童（折 $350）</option>
                 <option value="child6up">6 歲以上孩童</option>
                 <option value="adult">大人</option>
             </select>
+        </div>
+        <div class="m-ins-wrap">
+            <label>年齡（保險用）<span>*</span></label>
+            <select class="m-ins" onchange="calculateTotal()">${INS_OPTIONS}</select>
         </div>
         <label class="staff-check m-staff-wrap">
             <input type="checkbox" class="m-staff" onchange="calculateTotal()"> 工作人員（折 $300）
@@ -673,6 +718,7 @@ function syncCard(card) {
     const type = card.querySelector('.m-type').value;
     const famBox = card.querySelector('.m-family');
     const staffWrap = card.querySelector('.m-staff-wrap');
+    const ins = card.querySelector('.m-ins');
     if (type === 'family') {
         famBox.classList.remove('hidden');
         staffWrap.classList.add('hidden');
@@ -682,9 +728,22 @@ function syncCard(card) {
         card.querySelector('.m-fam').value = '';
         staffWrap.classList.remove('hidden');
     }
+    // 未滿6歲的家屬一定是未滿15足歲，自動帶入並鎖定
+    const fam = card.querySelector('.m-fam').value;
+    if (type === 'family' && (fam === 'infant' || fam === 'child36')) {
+        ins.value = 'u15';
+        ins.disabled = true;
+    } else {
+        ins.disabled = false;
+    }
 }
 
 function onTypeChange(sel) {
+    syncCard(sel.closest('.member-card'));
+    calculateTotal();
+}
+
+function onFamChange(sel) {
     syncCard(sel.closest('.member-card'));
     calculateTotal();
 }
@@ -705,6 +764,7 @@ function getMembers() {
         name: document.getElementById('userName').value.trim(),
         type: 'partner', fam: '',
         staff: document.getElementById('leaderStaff').checked,
+        ins: document.getElementById('leaderIns').value,
         isLeader: true
     }];
     getGuestCards().slice(0, size - 1).forEach(card => {
@@ -713,6 +773,7 @@ function getMembers() {
             type: card.querySelector('.m-type').value,
             fam: card.querySelector('.m-fam').value,
             staff: card.querySelector('.m-staff').checked,
+            ins: card.querySelector('.m-ins').value,
             isLeader: false
         });
     });
@@ -720,8 +781,8 @@ function getMembers() {
 }
 
 function describeMember(m) {
-    if (m.type === 'family') return FAM_LABEL[m.fam] || '家屬';
-    return '夥伴' + (m.staff ? '・工作人員' : '');
+    const base = (m.type === 'family') ? (FAM_LABEL[m.fam] || '家屬') : ('夥伴' + (m.staff ? '・工作人員' : ''));
+    return base + '・' + INS_LABEL[m.ins];
 }
 
 function calcDiscount(members) {
@@ -733,9 +794,31 @@ function calcDiscount(members) {
     }, 0);
 }
 
+// 依年齡類別清單計算保險費，回傳 { total, text }
+function calcInsurance(keys) {
+    const n = { u15: 0, adult: 0, sr: 0 };
+    keys.forEach(k => { n[k] = (n[k] || 0) + 1; });
+    const parts = [];
+    if (n.u15)   parts.push('未滿15歲 ' + n.u15 + ' 人 × $50');
+    if (n.adult) parts.push('15-64歲 ' + n.adult + ' 人 × $100');
+    if (n.sr)    parts.push('65歲以上 ' + n.sr + ' 人（請私訊魚夫的 Line 洽詢保險）');
+    return { total: n.u15 * INS_PRICE.u15 + n.adult * INS_PRICE.adult, text: parts.join('、') };
+}
+
+// 單日方案的所有投保人年齡類別：填表人 + 攜伴大人 + 攜伴孩童（6歲以下一律未滿15歲）
+function getSingleInsKeys() {
+    const keys = [document.getElementById('leaderIns').value];
+    const adultCount = parseInt(document.getElementById('adultCount').value) || 0;
+    const childCount = parseInt(document.getElementById('childCount').value) || 0;
+    const sels = document.querySelectorAll('#adultNames select');
+    for (let i = 0; i < adultCount; i++) keys.push(sels[i] ? sels[i].value : 'adult');
+    for (let i = 0; i < childCount; i++) keys.push('u15');
+    return keys;
+}
+
 function calculateTotal() {
     const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
-    let baseCost = 0, addonCost = 0, discount = 0;
+    let baseCost = 0, addonCost = 0, discount = 0, ins;
     const discountRow = document.getElementById('discount-row');
 
     if (mainPlan === 'single_day') {
@@ -746,39 +829,60 @@ function calculateTotal() {
         document.getElementById('baseCostText').innerText = '$1,000 (夥伴本人)';
         document.getElementById('addonCostText').innerText = '$' + addonCost.toLocaleString();
         discountRow.classList.add('hidden');
+        ins = calcInsurance(getSingleInsKeys());
     } else {
         const room = ROOM_INFO[document.getElementById('roomType').value];
         baseCost = room.price;
-        discount = calcDiscount(getMembers());
+        const members = getMembers();
+        discount = calcDiscount(members);
         document.getElementById('baseCostText').innerText =
             '$' + room.price.toLocaleString() + ' (' + room.name + '總額)';
         document.getElementById('addonCostText').innerText = '$0';
         document.getElementById('discountText').innerText = '-$' + discount.toLocaleString();
         discountRow.classList.toggle('hidden', discount === 0);
+        ins = calcInsurance(members.map(m => m.ins));
     }
 
-    const total = Math.max(0, baseCost + addonCost - discount);
+    document.getElementById('insuranceText').innerText = '$' + ins.total.toLocaleString();
+    document.getElementById('insuranceDetail').innerText = ins.text;
+
+    const total = Math.max(0, baseCost + addonCost - discount + ins.total);
     document.getElementById('totalCostText').innerText = '$' + total.toLocaleString();
 }
-    // 依人數產生攜伴姓名欄位（已填的名字不會因為調整人數而消失）
-function renderNameInputs(boxId, selectId, label) {
+    // 依人數產生攜伴姓名欄位（已填的名字、年齡不會因為調整人數而消失）
+    // withIns = true 時，每位另附保險年齡下拉（攜伴大人）；6歲以下孩童一律算未滿15足歲，不需選
+function renderNameInputs(boxId, selectId, label, withIns) {
     const box = document.getElementById(boxId);
     const n = parseInt(document.getElementById(selectId).value) || 0;
-    const old = Array.from(box.querySelectorAll('input')).map(i => i.value);
+    const old = Array.from(box.querySelectorAll('.comp-row')).map(r => ({
+        name: r.querySelector('input').value,
+        ins: r.querySelector('select') ? r.querySelector('select').value : 'adult'
+    }));
     box.innerHTML = '';
     for (let i = 0; i < n; i++) {
+        const row = document.createElement('div');
+        row.className = 'comp-row';
         const inp = document.createElement('input');
         inp.type = 'text';
         inp.placeholder = label + ' ' + (i + 1) + ' 姓名（必填）';
-        inp.value = old[i] || '';
+        inp.value = old[i] ? old[i].name : '';
         inp.style.marginTop = '8px';
-        box.appendChild(inp);
+        row.appendChild(inp);
+        if (withIns) {
+            const sel = document.createElement('select');
+            sel.innerHTML = INS_OPTIONS;
+            sel.value = old[i] ? old[i].ins : 'adult';
+            sel.addEventListener('change', calculateTotal);
+            row.appendChild(sel);
+        }
+        box.appendChild(row);
     }
 }
 
 function renderCompanionNames() {
-    renderNameInputs('adultNames', 'adultCount', '攜伴大人');
-    renderNameInputs('childNames', 'childCount', '攜伴孩童');
+    renderNameInputs('adultNames', 'adultCount', '攜伴大人', true);
+    renderNameInputs('childNames', 'childCount', '攜伴孩童', false);
+    calculateTotal();
 }
 
 document.getElementById('adultCount').addEventListener('change', renderCompanionNames);
@@ -817,140 +921,4 @@ function applyRemaining() {
         if (firstOpen) roomSelect.value = firstOpen.value;
     }
     const allRoomsFull = Array.from(roomSelect.options).every(o => o.disabled);
-    document.querySelector('input[value="overnight"]').disabled = allRoomsFull;
-
-    // 單日：名額、停用超過剩餘人數的選項
-    document.getElementById('badge_single').innerText =
-        remaining.single > 0 ? '剩 ' + remaining.single + ' 人' : '已額滿';
-    document.querySelector('input[value="single_day"]').disabled = remaining.single < 1;
-    limitSingleOptions();
-}
-
-function limitSingleOptions() {
-    if (!remaining) return;
-    const adultSel = document.getElementById('adultCount');
-    const childSel = document.getElementById('childCount');
-    Array.from(adultSel.options).forEach(o => {
-        o.disabled = 1 + Number(o.value) + Number(childSel.value) > remaining.single;
-    });
-    Array.from(childSel.options).forEach(o => {
-        o.disabled = 1 + Number(adultSel.value) + Number(o.value) > remaining.single;
-    });
-}
-
-document.getElementById('adultCount').addEventListener('change', limitSingleOptions);
-document.getElementById('childCount').addEventListener('change', limitSingleOptions);
-
-function copyAccount(btn) {
-    const text = document.getElementById('bankAccount').innerText.trim();
-    const done = () => { btn.innerText = '已複製'; setTimeout(() => btn.innerText = '複製', 1500); };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(() => {});
-    } else {
-        const t = document.createElement('textarea');
-        t.value = text; document.body.appendChild(t); t.select();
-        try { document.execCommand('copy'); done(); } catch (e) {}
-        document.body.removeChild(t);
-    }
-}
-
-document.getElementById('registrationForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-
-    const remitLast5 = document.getElementById('remitLast5').value.trim();
-    const remitAmountRaw = document.getElementById('remitAmount').value.replace(/[^0-9]/g, '');
-    if (!/^[0-9]{5}$/.test(remitLast5)) { alert('匯款帳號後五碼請輸入 5 位數字'); return; }
-    if (!remitAmountRaw) { alert('請輸入匯款金額'); return; }
-    const totalNum = parseInt(document.getElementById('totalCostText').innerText.replace(/[^0-9]/g, '')) || 0;
-    if (parseInt(remitAmountRaw) !== totalNum) {
-        if (!confirm('您填寫的匯款金額 $' + parseInt(remitAmountRaw).toLocaleString() + ' 與應繳金額 $' + totalNum.toLocaleString() + ' 不同，確定要送出嗎？')) return;
-    }
-
-    const btn = document.querySelector('.btn-submit');
-    const mainPlan = document.querySelector('input[name="mainPlan"]:checked').value;
-
-   let members = [];
-let discount = 0;
-if (mainPlan === 'overnight') {
-    members = getMembers();
-    for (let i = 1; i < members.length; i++) {
-        if (!members[i].name) { alert('請填寫同行人員 ' + i + ' 的姓名'); return; }
-        if (members[i].type === 'family' && !members[i].fam) {
-            alert('請選擇同行人員 ' + i + ' 的家屬類別'); return;
-        }
-    }
-    discount = calcDiscount(members);
-}
-let companions = '';
-if (mainPlan === 'single_day') {
-    const aNames = Array.from(document.querySelectorAll('#adultNames input')).map(i => i.value.trim());
-    const cNames = Array.from(document.querySelectorAll('#childNames input')).map(i => i.value.trim());
-    if ([...aNames, ...cNames].some(n => !n)) {
-        alert('請填寫所有攜伴人員的姓名');
-        return;
-    }
-    companions = [
-        ...aNames.map(n => n + '（大人）'),
-        ...cNames.map(n => n + '（孩童）')
-    ].join('、');
-}
-const guests = members.filter(m => !m.isLeader);
-
-const data = {
-    name: document.getElementById('userName').value,
-    phone: document.getElementById('userPhone').value,
-    lineId: document.getElementById('lineId').value,
-    lineName: document.getElementById('lineName').value,
-    plan: mainPlan === 'single_day' ? '單日不留宿' : '兩天一夜住宿',
-    adults: mainPlan === 'single_day' ? document.getElementById('adultCount').value : '',
-    children: mainPlan === 'single_day' ? document.getElementById('childCount').value : '',
-    roomType: mainPlan === 'overnight' ? document.getElementById('roomType').value : '',
-    // 沿用原欄位：同行人員姓名（含身分），例：王小明（夥伴・工作人員）、李小華（家屬-3-6歲孩童）
-    roommates: guests.map(m => m.name + '（' + describeMember(m) + '）').join('、'),
-    leaderStaff: mainPlan === 'overnight' ? (members[0].staff ? '是' : '否') : '',
-    discount: discount,
-        companions: companions,
-    total: document.getElementById('totalCostText').innerText,
-    remitLast5: remitLast5,
-    remitAmount: parseInt(remitAmountRaw)
-};
-
-    btn.disabled = true;
-    btn.innerText = '送出中...';
-
-    try {
-        // 不加 headers，避免瀏覽器的預檢請求被 Apps Script 擋掉
-        const res = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        const result = await res.json();
-
-        if (result.remaining) { remaining = result.remaining; applyRemaining(); }
-
-        if (result.result === 'success') {
-            alert('感謝您的報名！我們已收到您的資料。');
-           this.reset();
-            renderCompanionNames(); 
-updateRoomFields();
-togglePlan('single_day');
-applyRemaining();
-        } else if (result.result === 'full') {
-            alert(result.message + '，請調整後重新送出。');
-        } else {
-            alert('送出失敗，請稍後再試或聯絡主辦人。');
-        }
-    } catch (err) {
-        alert('送出失敗，請稍後再試或聯絡主辦人。');
-    } finally {
-        btn.disabled = false;
-        btn.innerText = '送出報名表單';
-    }
-});
-
-    buildMemberList();
-loadRemaining();
-</script>
-
-</body>
-</html>
+    document.querySelector('input[value="o
